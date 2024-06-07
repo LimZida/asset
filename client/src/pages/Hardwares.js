@@ -1,8 +1,8 @@
 import "../styles/Hardwares.css";
 import axios from "axios";
 import React, { useState, useEffect } from 'react';
-import {  Button, Input, Space, Table } from 'antd';
-import { RedoOutlined } from '@ant-design/icons';
+import {  Button, Input, Space, Table, Spin } from 'antd';
+import { RedoOutlined, LoadingOutlined } from '@ant-design/icons';
 import request from "../instance";
 import { render } from "@testing-library/react";
 
@@ -56,6 +56,9 @@ const columns = [
 const Hardwares = () => {
   const [data, setData] = useState();
   const [searchList, setSearchList] = useState();
+  const [loading, setLoading] = useState(false);
+  const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
+  
   const onSearch = (value) => { var list = data.filter((list) => list.hwNo.indexOf(value) > -1 || list.hwDiv.codeName.indexOf(value) > -1 
                                     || list.hwLocation.codeName.indexOf(value) > -1 || list.hwMfr.codeName.indexOf(value) > -1
                                     || list.hwModel.indexOf(value) > -1 || list.usageInfo.usageDept.codeName.indexOf(value) > -1 
@@ -78,7 +81,8 @@ const Hardwares = () => {
   //하드웨어 목록 조회
   const reqHardList = function(){
     let url = "http://218.55.79.25:8087/mcnc-mgmts/assets/hardwares";
-    
+    setLoading(true);
+
     request.get(url)
       .then((res)=>{
         setData(res.data);
@@ -86,13 +90,13 @@ const Hardwares = () => {
         for(var i = 0; i < res.data.length; i++){
           searchData.push({key: i , ...res.data[i]});
         }
-        console.log(searchData);
         setSearchList(searchData);
+        setLoading(false);
       })
       .catch((res) => {
         //실패
         console.log("실패");
-        console.log(res);
+        setLoading(false);
       });
   }
 
@@ -152,7 +156,9 @@ const Hardwares = () => {
       />
       <Button type="primary" shape="circle" icon={<RedoOutlined />} onClick={()=>{ reqHardList(); }}/>
     </div>
-    <Table rowSelection={rowSelection} columns={columns} dataSource={searchList} onHeaderRow={(record, idx)=>{
+    <Table
+    loading={loading ? { indicator: <Spin indicator={antIcon} /> } : false}
+    rowSelection={rowSelection} columns={columns} dataSource={searchList} onHeaderRow={(record, idx)=>{
       console.log(record);
       console.log(idx);
     }}  onRow={(record, rowIndex) => {
