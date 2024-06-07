@@ -1,0 +1,30 @@
+.menu-title {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    font-size: 17px;
+    font-weight: bold;
+    color: #6db1cc !important;
+}
+
+.ant-menu-item-selected {
+    background-color: #6db1cc !important;
+    color: white !important;
+  }
+
+  .ant-layout-sider-trigger {
+    /* background-color: #6db1cc !important; */
+    color: #6db1cc !important;
+  }
+
+  .ant-menu-item-group-title {
+    float: left;
+    margin-left: 10px;
+  }
+
+  :where(.css-dev-only-do-not-override-1okl62o).ant-space {
+    display: flex !important;
+  }
+
+  /* .ant-input-search {
+    float: right !important;
+  } */
