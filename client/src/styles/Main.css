@@ -25,6 +25,10 @@
     display: flex !important;
   }
 
+  a {
+    text-decoration: none;
+  }
+
   /* .ant-input-search {
     float: right !important;
   } */
