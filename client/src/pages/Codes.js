@@ -3,30 +3,8 @@ import { FolderOpenOutlined, FolderOutlined, LoadingOutlined, RedoOutlined } fro
 import { Breadcrumb, Layout, Menu, theme } from "antd";
 import request from "../instance";
 
-import { Button, Input, Space, Table, Spin } from "antd";
+import { Button, Input, Space, Table, Spin, Form, Typography, Popconfirm, Switch } from "antd";
 import { render } from "@testing-library/react";
-
-const columns = [
-  {
-    title: "코드값",
-    dataIndex: "hwNo",
-  },
-  {
-    title: "코드명",
-    dataIndex: "hwDiv",
-    render: (hwDiv) => `${hwDiv.codeName}`,
-  },
-  {
-    title: "비고",
-    dataIndex: "hwLocation",
-    render: (hwLocation) => `${hwLocation.codeName}`,
-  },
-  {
-    title: "활성화",
-    dataIndex: "hwMfr",
-    render: (hwMfr) => `${hwMfr.codeName}`,
-  },
-];
 
 function addToParent(parentArray, child, parentCode) {
   for (let parent of parentArray) {
@@ -44,7 +22,7 @@ function addToParent(parentArray, child, parentCode) {
   return false;
 }
 
-function reqMenuData(data) {
+function MenuDataSetting(data) {
   const result = [];
 
   for (let item of data) {
@@ -87,167 +65,53 @@ function reqMenuData(data) {
   return result;
 }
 
-// let testData = [
-//   {
-//     code: "CTG01",
-//     codeName: "전체",
-//     codeInnerType: "-",
-//     upperCode: "-",
-//     codeType: "CTG",
-//     codeDepth: 0,
-//     activeYn: true,
-//   },
-//   {
-//     code: "CTG0101",
-//     codeName: "공통",
-//     codeInnerType: "-",
-//     upperCode: "CTG01",
-//     codeType: "CTG",
-//     codeDepth: 1,
-//     activeYn: true,
-//   },
-//   {
-//     code: "CTG010101",
-//     codeName: "부서",
-//     codeInnerType: "(DPT)",
-//     upperCode: "CTG0101",
-//     codeType: "CTG",
-//     codeDepth: 2,
-//     activeYn: true,
-//   },
-//   {
-//     code: "CTG010102",
-//     codeName: "위치",
-//     codeInnerType: "(LOC)",
-//     upperCode: "CTG0101",
-//     codeType: "CTG",
-//     codeDepth: 2,
-//     activeYn: true,
-//   },
-//   {
-//     code: "CTG010103",
-//     codeName: "상태명",
-//     codeInnerType: "(STS)",
-//     upperCode: "CTG0101",
-//     codeType: "CTG",
-//     codeDepth: 2,
-//     activeYn: true,
-//   },
-//   {
-//     code: "CTG010104",
-//     codeName: "자산 종류",
-//     codeInnerType: "(TYPE)",
-//     upperCode: "CTG0101",
-//     codeType: "CTG",
-//     codeDepth: 2,
-//     activeYn: true,
-//   },
-//   {
-//     code: "CTG010105",
-//     codeName: "자산 용도",
-//     codeInnerType: "(USE)",
-//     upperCode: "CTG0101",
-//     codeType: "CTG",
-//     codeDepth: 2,
-//     activeYn: true,
-//   },
-//   {
-//     code: "CTG0102",
-//     codeName: "하드웨어",
-//     codeInnerType: "-",
-//     upperCode: "CTG01",
-//     codeType: "CTG",
-//     codeDepth: 1,
-//     activeYn: true,
-//   },
-//   {
-//     code: "CTG010201",
-//     codeName: "자산명",
-//     codeInnerType: "(AST)",
-//     upperCode: "CTG0102",
-//     codeType: "CTG",
-//     codeDepth: 2,
-//     activeYn: true,
-//   },
-//   {
-//     code: "CTG010202",
-//     codeName: "제조사",
-//     codeInnerType: "(COM)",
-//     upperCode: "CTG0102",
-//     codeType: "CTG",
-//     codeDepth: 2,
-//     activeYn: true,
-//   },
-//   {
-//     code: "CTG010203",
-//     codeName: "CPU",
-//     codeInnerType: "(CPU)",
-//     upperCode: "CTG0102",
-//     codeType: "CTG",
-//     codeDepth: 2,
-//     activeYn: true,
-//   },
-//   {
-//     code: "CTG0103",
-//     codeName: "소프트웨어",
-//     codeInnerType: "-",
-//     upperCode: "CTG01",
-//     codeType: "CTG",
-//     codeDepth: 1,
-//     activeYn: true,
-//   },
-//   {
-//     code: "CTG010301",
-//     codeName: "자산명",
-//     codeInnerType: "(AST)",
-//     upperCode: "CTG0103",
-//     codeType: "CTG",
-//     codeDepth: 2,
-//     activeYn: true,
-//   },
-//   {
-//     code: "CTG010302",
-//     codeName: "제조사",
-//     codeInnerType: "(COM)",
-//     upperCode: "CTG0103",
-//     codeType: "CTG",
-//     codeDepth: 2,
-//     activeYn: true,
-//   },
-//   {
-//     code: "CTG010303",
-//     codeName: "프로그램 및 운영체제",
-//     codeInnerType: "(OS)",
-//     upperCode: "CTG0103",
-//     codeType: "CTG",
-//     codeDepth: 2,
-//     activeYn: true,
-//   },
-//   {
-//     code: "CTG010304",
-//     codeName: "운영체제 버전",
-//     codeInnerType: "(OSV)",
-//     upperCode: "CTG0103",
-//     codeType: "CTG",
-//     codeDepth: 2,
-//     activeYn: true,
-//   },
-//   {
-//     code: "CTG010305",
-//     codeName: "라이센스 유형",
-//     codeInnerType: "(LIC)",
-//     upperCode: "CTG0103",
-//     codeType: "CTG",
-//     codeDepth: 2,
-//     activeYn: true,
-//   },
-// ];
+const EditableCell = ({ editing, dataIndex, title, inputType, record, index, children, ...restProps }) => {
+  const inputNode = <Input />;
+
+  return (
+    <td {...restProps}>
+      {editing ? (
+        <Form.Item
+          name={dataIndex}
+          style={{ margin: 0 }}
+          rules={[
+            {
+              required: true,
+              message: `Please Input ${title}!`,
+            },
+          ]}
+        >
+          {inputNode}
+        </Form.Item>
+      ) : (
+        children
+      )}
+    </td>
+  );
+};
 
 const Codes = () => {
   const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
   const [menuList, setMenuList] = useState([]);
+  const [originMenuData, setOriginMenuData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [data, setData] = useState();
   const [searchList, setSearchList] = useState();
+  const [form] = Form.useForm();
+  const [editingKey, setEditingKey] = useState("");
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+
+  const isEditing = (record) => record.key === editingKey;
+
+  const edit = (record) => {
+    form.setFieldsValue({ code: "", codeName: "", codeRemark: "", ...record });
+    setEditingKey(record.key);
+  };
+
+  const cancel = () => {
+    setEditingKey("");
+  };
+
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -255,20 +119,21 @@ const Codes = () => {
   const { Content, Sider } = Layout;
 
   useEffect(() => {
-    test();
+    reqMenuData();
   }, []);
 
-  const test = function () {
+  /**
+   * @title 메뉴 조회
+   */
+  const reqMenuData = function () {
     let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements/categorys";
     setLoading(true);
 
     request
       .get(url)
       .then((res) => {
-        console.log("res", res);
-
-        let menuData = reqMenuData(res.data);
-        // let menuData = reqMenuData(testData);
+        setOriginMenuData(res.data);
+        let menuData = MenuDataSetting(res.data);
         setMenuList(menuData);
         setLoading(false);
       })
@@ -279,15 +144,154 @@ const Codes = () => {
       });
   };
 
+  /**
+   * @title 코드 조회
+   */
+  const reqCodeData = function (code) {
+    let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements";
+    setLoading(true);
+
+    request
+      .get(url, {
+        params: {
+          code: code,
+        },
+      })
+      .then((res) => {
+        console.log("res", res);
+        // setData(res.data);
+        var searchData = [];
+        for (var i = 0; i < res.data.codeList.length; i++) {
+          searchData.push({ key: i, ...res.data.codeList[i] });
+        }
+        setSearchList(searchData);
+        setLoading(false);
+      })
+      .catch((res) => {
+        //실패
+        console.log("실패");
+        setLoading(false);
+      });
+  };
+
+  const onChange2 = (checked) => {
+    console.log("checked", checked);
+  };
+
+  const setSelectedMenu = (keyPath) => {
+    let selected = originMenuData.filter((item) => keyPath.includes(item.code));
+    setSelectedRowKeys(selected);
+  };
+
+  const save = async (key) => {
+    try {
+      const row = await form.validateFields();
+      const newData = [...data];
+      const index = newData.findIndex((item) => key === item.key);
+      if (index > -1) {
+        const item = newData[index];
+        newData.splice(index, 1, {
+          ...item,
+          ...row,
+        });
+        setData(newData);
+        setEditingKey("");
+      } else {
+        newData.push(row);
+        setData(newData);
+        setEditingKey("");
+      }
+    } catch (errInfo) {
+      console.log("Validate Failed:", errInfo);
+    }
+  };
+
+  const columns = [
+    {
+      title: "코드값",
+      dataIndex: "code",
+      editable: true,
+    },
+    {
+      title: "코드명",
+      dataIndex: "codeName",
+      editable: true,
+    },
+    {
+      title: "비고",
+      dataIndex: "codeRemark",
+      editable: true,
+    },
+    {
+      title: "활성화",
+      dataIndex: "activeYn",
+      render: (activeYn, record) => <Switch onChange={() => onChange2(record)} defaultChecked={activeYn} />,
+    },
+    {
+      title: "",
+      dataIndex: "",
+      render: (_, record) => {
+        const editable = isEditing(record);
+        return editable ? (
+          <span>
+            <Typography.Link
+              onClick={() => save(record.key)}
+              style={{
+                marginRight: 8,
+              }}
+            >
+              저장
+            </Typography.Link>
+            <Popconfirm title="취소하시겠습니까?" onConfirm={cancel}>
+              <a>취소</a>
+            </Popconfirm>
+          </span>
+        ) : (
+          <Typography.Link disabled={editingKey !== ""} onClick={() => edit(record)}>
+            수정
+          </Typography.Link>
+        );
+      },
+    },
+  ];
+  const mergedColumns = columns.map((col) => {
+    if (!col.editable) {
+      return col;
+    }
+    return {
+      ...col,
+      onCell: (record) => ({
+        record,
+        inputType: "text",
+        dataIndex: col.dataIndex,
+        title: col.title,
+        editing: isEditing(record),
+      }),
+    };
+  });
+
   return (
     <Layout>
       <Layout loading={loading ? { indicator: <Spin indicator={antIcon} /> } : false}>
         <Sider width={300} style={{ background: colorBgContainer }}>
-          <Menu mode="inline" defaultSelectedKeys={["1"]} defaultOpenKeys={["sub1"]} style={{ height: "100%", borderRight: 0 }} items={menuList} />
+          <Button>카테고리 관리</Button>
+          <Menu
+            mode="inline"
+            defaultOpenKeys={["CTG01", "CTG0101", "CTG0102", "CTG0103"]}
+            style={{ height: "100%", borderRight: 0 }}
+            items={menuList}
+            onClick={function ({ item, key, keyPath, domEvent }) {
+              console.log("keyPath", keyPath);
+              setSelectedMenu(keyPath);
+              reqCodeData(key);
+            }}
+          />
         </Sider>
         <Layout style={{ padding: "0 24px 24px" }}>
           <Breadcrumb style={{ margin: "16px 0" }}>
-            <Breadcrumb.Item>Home</Breadcrumb.Item>
+            {selectedRowKeys.map((selected, idx) => (
+              <Breadcrumb.Item key={idx}>{selected.codeName}</Breadcrumb.Item>
+            ))}
           </Breadcrumb>
           <Content
             style={{
@@ -298,18 +302,30 @@ const Codes = () => {
               borderRadius: borderRadiusLG,
             }}
           >
-            <Table
-              loading={loading ? { indicator: <Spin indicator={antIcon} /> } : false}
-              columns={columns}
-              dataSource={searchList}
-              onRow={(record, rowIndex) => {
-                return {
-                  onClick: (event) => {
-                    console.log(record);
-                  }, // click row
-                };
-              }}
-            />
+            <Form form={form} component={false}>
+              <Table
+                loading={loading ? { indicator: <Spin indicator={antIcon} /> } : false}
+                components={{
+                  body: {
+                    cell: EditableCell,
+                  },
+                }}
+                bordered
+                rowClassName="editable-row"
+                pagination={{
+                  onChange: cancel,
+                }}
+                columns={mergedColumns}
+                dataSource={searchList}
+                // onRow={(record, rowIndex) => {
+                //   return {
+                //     onClick: (event) => {
+                //       console.log(record);
+                //     }, // click row
+                //   };
+                // }}
+              />
+            </Form>
           </Content>
         </Layout>
       </Layout>
