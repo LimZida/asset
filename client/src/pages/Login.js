@@ -5,36 +5,37 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Card } from "antd";
 import { useCookies } from "react-cookie";
 import { useDispatch, useSelector } from "react-redux";
-import {changeUserInfo} from "../store/store";
+import { changeUserInfo } from "../store/store";
 
 function Login() {
-  let state = useSelector((state)=> state);
-  let dispatch = useDispatch();//store.js로 요청보내주는 함수
+  let state = useSelector((state) => state);
+  let dispatch = useDispatch(); //store.js로 요청보내주는 함수
 
   let navigate = useNavigate();
   let location = useLocation();
-  const [cookies, setCookie, removeCookie] = useCookies(['id']);
+  const [cookies, setCookie, removeCookie] = useCookies(["id"]);
 
   useEffect(() => {
     console.log(state);
-    if(location.pathname === "/"){
+    if (location.pathname === "/") {
       navigate("/login"); //링크 고정
-    }else{
+    } else {
       let saveId = localStorage.getItem("userId");
       if (saveId) {
         document.getElementById("userId").value = saveId;
       }
     }
-     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function ReqLogin(userId, userPw) { //로그인
+  function ReqLogin(userId, userPw) {
+    //로그인
     let url = "http://218.55.79.25:8087/mcnc-mgmts/auth/login";
     let data = {
       userId: userId,
       userPw: userPw,
     };
-  
+
     axios
       .post(url, data)
       .then((res) => {
@@ -43,7 +44,7 @@ function Login() {
         if (document.getElementById("remember-check").checked) {
           localStorage.setItem("userId", userId);
           dispatch(changeUserInfo(userId));
-        }else{
+        } else {
           localStorage.removeItem("userId");
         }
 
@@ -63,12 +64,10 @@ function Login() {
         <Card className="loginWrap">
           <h2>MCNC 자산 관리 시스템</h2>
           <div className="contentsWrap">
-            <input type="text" id="userId" placeholder="Id" />
-            <input type="password" id="userPw" placeholder="Password" />
+            <input type="text" id="userId" placeholder="Id" value={"skpark2"} />
+            <input type="password" id="userPw" placeholder="Password" value={"mcnc1234!@"} />
             <div>
-              <input type="checkbox" name="remember-check"
-                id="remember-check"
-              />
+              <input type="checkbox" name="remember-check" id="remember-check" />
               <label htmlFor="remember-check">아이디 저장하기</label>
             </div>
             <button

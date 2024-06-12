@@ -28,6 +28,11 @@
   a {
     text-decoration: none;
   }
+  
+  .primaryBtn {
+    background-color: #6db1cc !important;
+    color: white !important;
+  }
 
   /* .ant-input-search {
     float: right !important;

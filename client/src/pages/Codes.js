@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { FolderOpenOutlined, FolderOutlined, LoadingOutlined, RedoOutlined } from "@ant-design/icons";
-import { Breadcrumb, Layout, Menu, theme } from "antd";
+import { Button, Input, Table, Spin, Form, Typography, Popconfirm, Switch, Modal, Breadcrumb, Layout, Menu, theme, Select, Space, Descriptions } from "antd";
 import request from "../instance";
 
-import { Button, Input, Space, Table, Spin, Form, Typography, Popconfirm, Switch } from "antd";
 import { render } from "@testing-library/react";
+const { Text } = Typography;
 
 function addToParent(parentArray, child, parentCode) {
   for (let parent of parentArray) {
@@ -28,6 +28,7 @@ function MenuDataSetting(data) {
   for (let item of data) {
     if (item.codeDepth === 0) {
       item.key = item.code;
+      item.value = item.code;
       item.label = item.codeName;
       item.icon = [FolderOpenOutlined].map((icon) => {
         return React.createElement(icon);
@@ -39,6 +40,7 @@ function MenuDataSetting(data) {
   for (let item of data) {
     if (item.codeDepth === 1) {
       item.key = item.code;
+      item.value = item.code;
       item.label = item.codeName;
       item.icon = [FolderOpenOutlined].map((icon) => {
         return React.createElement(icon);
@@ -51,6 +53,7 @@ function MenuDataSetting(data) {
     if (item.codeDepth === 2) {
       for (let parent of result) {
         item.key = item.code;
+        item.value = item.code;
         item.label = item.codeName + " " + item.codeInnerType;
         item.icon = [FolderOutlined].map((icon) => {
           return React.createElement(icon);
@@ -133,7 +136,7 @@ const Codes = () => {
       .get(url)
       .then((res) => {
         setOriginMenuData(res.data);
-        let menuData = MenuDataSetting(res.data);
+        let menuData = MenuDataSetting([...res.data]);
         setMenuList(menuData);
         setLoading(false);
       })
@@ -270,15 +273,60 @@ const Codes = () => {
     };
   });
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+  const handleOk = () => {
+    setIsModalOpen(false);
+  };
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
+  const [categoryEditFlag, setCategoryEditFlag] = useState(false);
+  const [codeDepth2Data, setCodeDepth2Data] = useState([]);
+  const [categoryCode, setCategoryCode] = useState("");
+  const [categoryName, setCategoryName] = useState("");
+  /** 카테고리 관리 셀렉트 이벤트 */
+  const handleDept1 = (value, e) => {
+    setCategoryEditFlag(value === "categoryAdd" ? false : true);
+    setCategoryCode(value === "categoryAdd" ? "" : value);
+    setCategoryName(e.codeName);
+    let temp = e.children;
+    temp.unshift({ value: "categoryAdd", label: "카테고리 수정" }, { value: "categoryEdit", label: "카테고리 추가" });
+    setCodeDepth2Data(temp);
+  };
+
+  const handleDept2 = (value, e) => {
+    console.log("e", e);
+    setCategoryEditFlag(value === "categoryAdd" ? false : true);
+    setCategoryCode(value === "categoryAdd" ? "" : value);
+    setCategoryName(e.codeName);
+  };
+
+  let codeDepth1data = originMenuData.filter((item) => {
+    if ([1].includes(item.codeDepth)) {
+      item.label = item.codeName;
+      item.value = item.code;
+      return true;
+    }
+    return false;
+  });
+  console.log("codeDepth1data", codeDepth1data);
+  codeDepth1data.unshift({ value: "categoryAdd", label: "카테고리 추가" });
+
   return (
     <Layout>
       <Layout loading={loading ? { indicator: <Spin indicator={antIcon} /> } : false}>
         <Sider width={300} style={{ background: colorBgContainer }}>
-          <Button>카테고리 관리</Button>
+          <Button style={{ height: "32px", width: "95%" }} className="primaryBtn" onClick={showModal}>
+            카테고리 관리
+          </Button>
           <Menu
             mode="inline"
             defaultOpenKeys={["CTG01", "CTG0101", "CTG0102", "CTG0103"]}
-            style={{ height: "100%", borderRight: 0 }}
+            style={{ height: `calc( 100% - 32px )`, borderRight: 0 }}
             items={menuList}
             onClick={function ({ item, key, keyPath, domEvent }) {
               console.log("keyPath", keyPath);
@@ -329,6 +377,42 @@ const Codes = () => {
           </Content>
         </Layout>
       </Layout>
+      <Modal
+        title="카테고리 관리"
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        okButtonProps={{
+          children: "Custom OK",
+        }}
+        cancelButtonProps={{
+          children: "Custom cancel",
+        }}
+        okText="저장"
+        cancelText="취소"
+      >
+        <Space wrap>
+          <Descriptions column={1} bordered>
+            <Descriptions.Item label="Dept1">
+              <Select defaultValue="카테고리 추가" style={{ width: 300 }} onChange={handleDept1} options={codeDepth1data} />
+            </Descriptions.Item>
+            {categoryEditFlag && (
+              <Descriptions.Item label="Dept2">
+                <Select defaultValue="카테고리 수정" style={{ width: 300 }} onChange={handleDept2} options={codeDepth2Data} />
+              </Descriptions.Item>
+            )}
+            <Descriptions.Item label="카테고리값">
+              <Input style={{ width: 300 }} value={categoryCode} disabled />
+            </Descriptions.Item>
+            <Descriptions.Item label="카테고리명">
+              <div>
+                <Input style={{ width: 300 }} value={categoryName} onChange={(event) => setCategoryName(event.target.value)} />
+              </div>
+              {!categoryEditFlag && <Text type="danger">카테고리명은 필수 입력사항입니다.</Text>}
+            </Descriptions.Item>
+          </Descriptions>
+        </Space>
+      </Modal>
     </Layout>
   );
 };
