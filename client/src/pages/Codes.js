@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { FolderOpenOutlined, FolderOutlined, LoadingOutlined, RedoOutlined } from "@ant-design/icons";
-import { Button, Input, Table, Spin, Form, Typography, Popconfirm, Switch, Modal, Breadcrumb, Layout, Menu, theme, Select, Space, Descriptions } from "antd";
+import { FolderOpenOutlined, FolderOutlined, LoadingOutlined } from "@ant-design/icons";
+import { Button, Input, Table, Spin, Form, Typography, Popconfirm, Switch, Breadcrumb, Layout, Menu, theme } from "antd";
 import request from "../instance";
-
-import { render } from "@testing-library/react";
-const { Text } = Typography;
+import CategoryModal from "../component/CategoryModal";
+import CodeModal from "../component/CodeModal";
 
 function addToParent(parentArray, child, parentCode) {
   for (let parent of parentArray) {
@@ -24,7 +23,6 @@ function addToParent(parentArray, child, parentCode) {
 
 function MenuDataSetting(data) {
   const result = [];
-
   for (let item of data) {
     if (item.codeDepth === 0) {
       item.key = item.code;
@@ -54,7 +52,7 @@ function MenuDataSetting(data) {
       for (let parent of result) {
         item.key = item.code;
         item.value = item.code;
-        item.label = item.codeName + " " + item.codeInnerType;
+        item.label = item.codeName;
         item.icon = [FolderOutlined].map((icon) => {
           return React.createElement(icon);
         });
@@ -161,8 +159,6 @@ const Codes = () => {
         },
       })
       .then((res) => {
-        console.log("res", res);
-        // setData(res.data);
         var searchData = [];
         for (var i = 0; i < res.data.codeList.length; i++) {
           searchData.push({ key: i, ...res.data.codeList[i] });
@@ -277,32 +273,9 @@ const Codes = () => {
   const showModal = () => {
     setIsModalOpen(true);
   };
-  const handleOk = () => {
-    setIsModalOpen(false);
-  };
-  const handleCancel = () => {
-    setIsModalOpen(false);
-  };
-
-  const [categoryEditFlag, setCategoryEditFlag] = useState(false);
-  const [codeDepth2Data, setCodeDepth2Data] = useState([]);
-  const [categoryCode, setCategoryCode] = useState("");
-  const [categoryName, setCategoryName] = useState("");
-  /** 카테고리 관리 셀렉트 이벤트 */
-  const handleDept1 = (value, e) => {
-    setCategoryEditFlag(value === "categoryAdd" ? false : true);
-    setCategoryCode(value === "categoryAdd" ? "" : value);
-    setCategoryName(e.codeName);
-    let temp = e.children;
-    temp.unshift({ value: "categoryAdd", label: "카테고리 수정" }, { value: "categoryEdit", label: "카테고리 추가" });
-    setCodeDepth2Data(temp);
-  };
-
-  const handleDept2 = (value, e) => {
-    console.log("e", e);
-    setCategoryEditFlag(value === "categoryAdd" ? false : true);
-    setCategoryCode(value === "categoryAdd" ? "" : value);
-    setCategoryName(e.codeName);
+  const [isModalOpen2, setIsModalOpen2] = useState(false);
+  const showModal2 = () => {
+    setIsModalOpen2(true);
   };
 
   let codeDepth1data = originMenuData.filter((item) => {
@@ -313,13 +286,24 @@ const Codes = () => {
     }
     return false;
   });
-  console.log("codeDepth1data", codeDepth1data);
   codeDepth1data.unshift({ value: "categoryAdd", label: "카테고리 추가" });
+
+  const closeCateModal = (data) => {
+    setIsModalOpen(data);
+  };
+
+  const closeCodeModal = (data) => {
+    setIsModalOpen2(data);
+  };
+
+  const updateCategory = () => {
+    reqMenuData();
+  };
 
   return (
     <Layout>
       <Layout loading={loading ? { indicator: <Spin indicator={antIcon} /> } : false}>
-        <Sider width={300} style={{ background: colorBgContainer }}>
+        <Sider width={260} style={{ background: colorBgContainer }}>
           <Button style={{ height: "32px", width: "95%" }} className="primaryBtn" onClick={showModal}>
             카테고리 관리
           </Button>
@@ -329,7 +313,6 @@ const Codes = () => {
             style={{ height: `calc( 100% - 32px )`, borderRight: 0 }}
             items={menuList}
             onClick={function ({ item, key, keyPath, domEvent }) {
-              console.log("keyPath", keyPath);
               setSelectedMenu(keyPath);
               reqCodeData(key);
             }}
@@ -337,6 +320,9 @@ const Codes = () => {
         </Sider>
         <Layout style={{ padding: "0 24px 24px" }}>
           <Breadcrumb style={{ margin: "16px 0" }}>
+            <Button style={{ width: 90, marginRight: 10 }} className="primaryBtn" onClick={showModal2}>
+              코드추가
+            </Button>
             {selectedRowKeys.map((selected, idx) => (
               <Breadcrumb.Item key={idx}>{selected.codeName}</Breadcrumb.Item>
             ))}
@@ -377,42 +363,8 @@ const Codes = () => {
           </Content>
         </Layout>
       </Layout>
-      <Modal
-        title="카테고리 관리"
-        open={isModalOpen}
-        onOk={handleOk}
-        onCancel={handleCancel}
-        okButtonProps={{
-          children: "Custom OK",
-        }}
-        cancelButtonProps={{
-          children: "Custom cancel",
-        }}
-        okText="저장"
-        cancelText="취소"
-      >
-        <Space wrap>
-          <Descriptions column={1} bordered>
-            <Descriptions.Item label="Dept1">
-              <Select defaultValue="카테고리 추가" style={{ width: 300 }} onChange={handleDept1} options={codeDepth1data} />
-            </Descriptions.Item>
-            {categoryEditFlag && (
-              <Descriptions.Item label="Dept2">
-                <Select defaultValue="카테고리 수정" style={{ width: 300 }} onChange={handleDept2} options={codeDepth2Data} />
-              </Descriptions.Item>
-            )}
-            <Descriptions.Item label="카테고리값">
-              <Input style={{ width: 300 }} value={categoryCode} disabled />
-            </Descriptions.Item>
-            <Descriptions.Item label="카테고리명">
-              <div>
-                <Input style={{ width: 300 }} value={categoryName} onChange={(event) => setCategoryName(event.target.value)} />
-              </div>
-              {!categoryEditFlag && <Text type="danger">카테고리명은 필수 입력사항입니다.</Text>}
-            </Descriptions.Item>
-          </Descriptions>
-        </Space>
-      </Modal>
+      <CategoryModal showModal={isModalOpen} originMenuData={originMenuData} closeCateModal={closeCateModal} updateCategory={updateCategory} />
+      <CodeModal showModal={isModalOpen2} closeCodeModal={closeCodeModal} />
     </Layout>
   );
 };
