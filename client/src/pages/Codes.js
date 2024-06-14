@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { FolderOpenOutlined, FolderOutlined, LoadingOutlined } from "@ant-design/icons";
-import { Button, Input, Table, Spin, Form, Typography, Popconfirm, Switch, Breadcrumb, Layout, Menu, theme } from "antd";
+import { Button, Spin, Breadcrumb, Layout, Menu, theme } from "antd";
 import request from "../instance";
 import CategoryModal from "../component/CategoryModal";
 import CodeModal from "../component/CodeModal";
+import CodeTable from "../component/CodeTable";
+import { errHandler } from "../common/utils";
 
 function addToParent(parentArray, child, parentCode) {
   for (let parent of parentArray) {
@@ -66,58 +68,19 @@ function MenuDataSetting(data) {
   return result;
 }
 
-const EditableCell = ({ editing, dataIndex, title, inputType, record, index, children, ...restProps }) => {
-  const inputNode = <Input />;
-
-  return (
-    <td {...restProps}>
-      {editing ? (
-        <Form.Item
-          name={dataIndex}
-          style={{ margin: 0 }}
-          rules={[
-            {
-              required: true,
-              message: `Please Input ${title}!`,
-            },
-          ]}
-        >
-          {inputNode}
-        </Form.Item>
-      ) : (
-        children
-      )}
-    </td>
-  );
-};
-
 const Codes = () => {
   const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
   const [menuList, setMenuList] = useState([]);
   const [originMenuData, setOriginMenuData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState();
   const [searchList, setSearchList] = useState();
-  const [form] = Form.useForm();
-  const [editingKey, setEditingKey] = useState("");
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
-  const isEditing = (record) => record.key === editingKey;
-
-  const edit = (record) => {
-    form.setFieldsValue({ code: "", codeName: "", codeRemark: "", ...record });
-    setEditingKey(record.key);
-  };
-
-  const cancel = () => {
-    setEditingKey("");
-  };
-
   const {
-    token: { colorBgContainer, borderRadiusLG },
+    token: { colorBgContainer },
   } = theme.useToken();
 
-  const { Content, Sider } = Layout;
+  const { Sider } = Layout;
 
   useEffect(() => {
     reqMenuData();
@@ -126,148 +89,51 @@ const Codes = () => {
   /**
    * @title 메뉴 조회
    */
-  const reqMenuData = function () {
+  const reqMenuData = async function () {
     let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements/categorys";
     setLoading(true);
 
-    request
-      .get(url)
-      .then((res) => {
-        setOriginMenuData(res.data);
-        let menuData = MenuDataSetting([...res.data]);
-        setMenuList(menuData);
-        setLoading(false);
-      })
-      .catch((res) => {
-        //실패
-        console.log("실패");
-        setLoading(false);
-      });
+    try {
+      const res = await request.get(url);
+      setOriginMenuData(res.data);
+      let menuData = MenuDataSetting([...res.data]);
+      setMenuList(menuData);
+      setLoading(false);
+    } catch (error) {
+      errHandler(error);
+      setLoading(false);
+    }
   };
 
   /**
    * @title 코드 조회
    */
-  const reqCodeData = function (code) {
+  const reqCodeData = async function (code) {
     let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements";
     setLoading(true);
 
-    request
-      .get(url, {
+    try {
+      const res = await request.get(url, {
         params: {
           code: code,
         },
-      })
-      .then((res) => {
-        var searchData = [];
-        for (var i = 0; i < res.data.codeList.length; i++) {
-          searchData.push({ key: i, ...res.data.codeList[i] });
-        }
-        setSearchList(searchData);
-        setLoading(false);
-      })
-      .catch((res) => {
-        //실패
-        console.log("실패");
-        setLoading(false);
       });
-  };
-
-  const onChange2 = (checked) => {
-    console.log("checked", checked);
+      var searchData = [];
+      for (var i = 0; i < res.data.codeList.length; i++) {
+        searchData.push({ key: i, ...res.data.codeList[i] });
+      }
+      setSearchList(searchData);
+      setLoading(false);
+    } catch (error) {
+      errHandler(error);
+      setLoading(false);
+    }
   };
 
   const setSelectedMenu = (keyPath) => {
     let selected = originMenuData.filter((item) => keyPath.includes(item.code));
     setSelectedRowKeys(selected);
   };
-
-  const save = async (key) => {
-    try {
-      const row = await form.validateFields();
-      const newData = [...data];
-      const index = newData.findIndex((item) => key === item.key);
-      if (index > -1) {
-        const item = newData[index];
-        newData.splice(index, 1, {
-          ...item,
-          ...row,
-        });
-        setData(newData);
-        setEditingKey("");
-      } else {
-        newData.push(row);
-        setData(newData);
-        setEditingKey("");
-      }
-    } catch (errInfo) {
-      console.log("Validate Failed:", errInfo);
-    }
-  };
-
-  const columns = [
-    {
-      title: "코드값",
-      dataIndex: "code",
-      editable: true,
-    },
-    {
-      title: "코드명",
-      dataIndex: "codeName",
-      editable: true,
-    },
-    {
-      title: "비고",
-      dataIndex: "codeRemark",
-      editable: true,
-    },
-    {
-      title: "활성화",
-      dataIndex: "activeYn",
-      render: (activeYn, record) => <Switch onChange={() => onChange2(record)} defaultChecked={activeYn} />,
-    },
-    {
-      title: "",
-      dataIndex: "",
-      render: (_, record) => {
-        const editable = isEditing(record);
-        return editable ? (
-          <span>
-            <Typography.Link
-              onClick={() => save(record.key)}
-              style={{
-                marginRight: 8,
-              }}
-            >
-              저장
-            </Typography.Link>
-            <Popconfirm title="취소하시겠습니까?" onConfirm={cancel}>
-              <a>취소</a>
-            </Popconfirm>
-          </span>
-        ) : (
-          <Typography.Link disabled={editingKey !== ""} onClick={() => edit(record)}>
-            수정
-          </Typography.Link>
-        );
-      },
-    },
-  ];
-  const mergedColumns = columns.map((col) => {
-    if (!col.editable) {
-      return col;
-    }
-    return {
-      ...col,
-      onCell: (record) => ({
-        record,
-        inputType: "text",
-        dataIndex: col.dataIndex,
-        title: col.title,
-        editing: isEditing(record),
-      }),
-    };
-  });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
@@ -286,7 +152,7 @@ const Codes = () => {
     }
     return false;
   });
-  codeDepth1data.unshift({ value: "categoryAdd", label: "카테고리 추가" });
+  codeDepth1data.unshift({ value: "createCategory", label: "카테고리 추가" });
 
   const closeCateModal = (data) => {
     setIsModalOpen(data);
@@ -298,6 +164,10 @@ const Codes = () => {
 
   const updateCategory = () => {
     reqMenuData();
+  };
+
+  const updateCode = (code) => {
+    reqCodeData(code);
   };
 
   return (
@@ -320,51 +190,20 @@ const Codes = () => {
         </Sider>
         <Layout style={{ padding: "0 24px 24px" }}>
           <Breadcrumb style={{ margin: "16px 0" }}>
-            <Button style={{ width: 90, marginRight: 10 }} className="primaryBtn" onClick={showModal2}>
-              코드추가
-            </Button>
+            {selectedRowKeys[0] && (
+              <Button style={{ width: 90, marginRight: 10 }} className="primaryBtn" onClick={showModal2}>
+                코드추가
+              </Button>
+            )}
             {selectedRowKeys.map((selected, idx) => (
               <Breadcrumb.Item key={idx}>{selected.codeName}</Breadcrumb.Item>
             ))}
           </Breadcrumb>
-          <Content
-            style={{
-              padding: 24,
-              margin: 0,
-              minHeight: 280,
-              background: colorBgContainer,
-              borderRadius: borderRadiusLG,
-            }}
-          >
-            <Form form={form} component={false}>
-              <Table
-                loading={loading ? { indicator: <Spin indicator={antIcon} /> } : false}
-                components={{
-                  body: {
-                    cell: EditableCell,
-                  },
-                }}
-                bordered
-                rowClassName="editable-row"
-                pagination={{
-                  onChange: cancel,
-                }}
-                columns={mergedColumns}
-                dataSource={searchList}
-                // onRow={(record, rowIndex) => {
-                //   return {
-                //     onClick: (event) => {
-                //       console.log(record);
-                //     }, // click row
-                //   };
-                // }}
-              />
-            </Form>
-          </Content>
+          <CodeTable searchList={searchList} updateCategory={updateCategory} updateCode={updateCode}></CodeTable>
         </Layout>
       </Layout>
       <CategoryModal showModal={isModalOpen} originMenuData={originMenuData} closeCateModal={closeCateModal} updateCategory={updateCategory} />
-      <CodeModal showModal={isModalOpen2} closeCodeModal={closeCodeModal} />
+      <CodeModal showModal={isModalOpen2} selected={selectedRowKeys[selectedRowKeys.length - 1]} closeCodeModal={closeCodeModal} />
     </Layout>
   );
 };

@@ -1,80 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { LoadingOutlined, CheckOutlined } from "@ant-design/icons";
-import { Button, Input, Typography, Modal, Select, Space, Descriptions, Spin, Alert } from "antd";
+import { Button, Input, Typography, Modal, Select, Space, Descriptions, Spin } from "antd";
 import request from "../instance";
+import { errHandler } from "../common/utils";
 
 const { Text } = Typography;
 
 const CategoryModal = (props) => {
-  const handleOk = () => {
-    if (!validateDept1) {
-      Modal.error({
-        title: "카테고리명 중복확인이 필요합니다.",
-      });
-    } else {
-      categorysAdd();
-      props.closeCateModal(false);
-    }
-  };
-
-  const handleCancel = () => {
-    props.closeCateModal(false);
-  };
-
-  const [categoryEditFlag, setCategoryEditFlag] = useState(false);
   const [codeDepth2Data, setCodeDepth2Data] = useState([]);
   const [categoryCode, setCategoryCode] = useState("");
   const [categoryName, setCategoryName] = useState("");
   const [codeType, setCodeType] = useState("");
+  const [updateCategoryFlag, setUpdateCategoryFlag] = useState(false);
   const [errText1, setErrText1] = useState(false);
   const [errText2, setErrText2] = useState(false);
   const [errText3, setErrText3] = useState(false);
-  const [selectedDept1, setSelectedDept1] = useState({ value: "categoryAdd", upperCode: "CTG01" });
-  const [selectedDept2, setSelectedDept2] = useState({});
-  const [showCodeType, setShowCodeType] = useState(false);
   const [loading, setLoading] = useState(false);
-  const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
+  const [showCodeType, setShowCodeType] = useState(false);
   const [validateDept1, setValidateDept1] = useState(false);
+  const [validateDept2, setValidateDept2] = useState(false);
+  const [selectedDept1, setSelectedDept1] = useState({ value: "createCategory", upperCode: "CTG01" });
+  const [selectedDept2, setSelectedDept2] = useState({ value: "updateCategory", label: "카테고리 수정" }, { value: "createCategory", label: "카테고리 추가" });
+  const [selectedDept1Value, setSelectedDept1Value] = useState("createCategory");
+  const [selectedDept2Value, setSelectedDept2Value] = useState("updateCategory");
+  const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
 
-  /** 카테고리 관리 셀렉트 이벤트 */
-  const handleDept1 = (value, e) => {
-    setShowCodeType(false);
-    // 카테고리 추가
-    if (value === "categoryAdd") {
-      setCategoryEditFlag(false);
-      setCategoryCode("");
-      setCategoryName("");
-      setSelectedDept1({ value: "categoryAdd", upperCode: "CTG01" });
-      setCodeDepth2Data([]);
-    } else {
-      setCategoryEditFlag(true);
-      setCategoryCode(value);
-      setCategoryName(e.codeName);
-      setSelectedDept1(e);
-      if (e.children) {
-        let temp = [...e.children];
-        temp.unshift({ value: "categoryEdit", label: "카테고리 수정" }, { value: "categoryAdd", label: "카테고리 추가" });
-        setCodeDepth2Data(temp);
-      }
-    }
-  };
-
-  const handleDept2 = (value, e) => {
-    setSelectedDept2(e);
-    if (value === "categoryEdit") {
-      setCategoryName(selectedDept1.codeName);
-      setCategoryCode(selectedDept1.code);
-    } else {
-      if (value === "categoryAdd") {
-        setCategoryCode("");
-        setCategoryName("");
-      } else {
-        setCategoryCode(value);
-        setCategoryName(e.codeName);
-      }
-    }
-  };
-
+  // select init
   let codeDepth1data = props.originMenuData.filter((item) => {
     if ([1].includes(item.codeDepth)) {
       item.label = item.codeName;
@@ -83,7 +34,7 @@ const CategoryModal = (props) => {
     }
     return false;
   });
-  codeDepth1data.unshift({ value: "categoryAdd", label: "카테고리 추가" });
+  codeDepth1data.unshift({ value: "createCategory", label: "카테고리 추가" });
 
   useEffect(() => {
     setValidateDept1(false);
@@ -110,64 +61,242 @@ const CategoryModal = (props) => {
   }, [codeType]);
 
   useEffect(() => {
-    if (selectedDept2.value === "categoryAdd") {
+    if (selectedDept2.value === "createCategory") {
       setShowCodeType(true);
     } else {
       setShowCodeType(false);
     }
   }, [selectedDept2]);
 
+  useEffect(() => {
+    initData();
+  }, [props.originMenuData]);
+
+  const initData = () => {
+    setValidateDept1(false);
+    setValidateDept2(false);
+    setUpdateCategoryFlag(false);
+    setCategoryName("");
+    setCategoryCode("");
+    setCodeType("");
+    setSelectedDept1Value("createCategory");
+    setSelectedDept2Value("updateCategory");
+    setSelectedDept1({ value: "createCategory", upperCode: "CTG01" });
+    setSelectedDept2({ value: "updateCategory", label: "카테고리 수정" });
+  };
+
+  // 저장버튼
+  const handleOk = () => {
+    if (validateData()) {
+      if (selectedDept1.value === "createCategory") {
+        createCategory();
+      } else if (selectedDept2.value === "updateCategory") {
+        updateCategory();
+      } else if (selectedDept2.value === "createCategory") {
+        createCategory();
+      } else {
+        updateCategory();
+      }
+    }
+  };
+
+  const validateData = () => {
+    if (!categoryName) {
+      Modal.error({
+        title: "카테고리명을 입력해주세요.",
+      });
+      return;
+    }
+    if (selectedDept1.value === "createCategory") {
+      if (!validateDept1) {
+        Modal.error({
+          title: "카테고리명 중복확인이 필요합니다.",
+        });
+        return;
+      }
+    } else if (selectedDept2.value === "createCategory") {
+      if (!validateDept1) {
+        Modal.error({
+          title: "카테고리명 중복확인이 필요합니다.",
+        });
+        return;
+      }
+      if (!validateDept2) {
+        Modal.error({
+          title: "코드타입 중복확인이 필요합니다.",
+        });
+        return;
+      }
+      if (!codeType) {
+        Modal.error({
+          title: "코드타입을 입력해주세요.",
+        });
+        return;
+      }
+    }
+    return true;
+  };
+
+  const handleCancel = () => {
+    initData();
+    props.closeCateModal(false);
+  };
+
+  /** 카테고리 관리 셀렉트 이벤트 */
+  const handleDept1 = (value, e) => {
+    setSelectedDept1Value(value);
+    setSelectedDept2Value("updateCategory");
+    setShowCodeType(false);
+    if (value === "createCategory") {
+      setUpdateCategoryFlag(false);
+      setCategoryCode("");
+      setCategoryName("");
+      setSelectedDept1({ value: "createCategory", upperCode: "CTG01" });
+      setCodeDepth2Data([]);
+    } else {
+      setUpdateCategoryFlag(true);
+      setCategoryCode(value);
+      setCategoryName(e.codeName);
+      setSelectedDept1(e);
+      let temp = e.children ? [...e.children] : [];
+      temp.unshift({ value: "updateCategory", label: "카테고리 수정" }, { value: "createCategory", label: "카테고리 추가" });
+      setCodeDepth2Data(temp);
+    }
+  };
+
+  const handleDept2 = (value, e) => {
+    setSelectedDept2Value(value);
+    setSelectedDept2(e);
+    if (value === "updateCategory") {
+      setCategoryName(selectedDept1.codeName);
+      setCategoryCode(selectedDept1.code);
+    } else {
+      if (value === "createCategory") {
+        setCategoryCode("");
+        setCategoryName("");
+      } else {
+        setCategoryCode(value);
+        setCategoryName(e.codeName);
+      }
+    }
+  };
+
   /**
    * @title 카테고리 중복검사
    */
-  const reqValidations = () => {
+  const reqValidations = async () => {
     let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements/categorys/validations";
     setLoading(true);
 
-    request
-      .post(url, {
-        codeName: categoryName,
-        codeType: "CTG",
-        upperCode: selectedDept1.upperCode,
-      })
-      .then((res) => {
-        setValidateDept1(true);
-        setCategoryCode(res.data.code);
+    if (!errText1) {
+      try {
+        const res = await request.post(url, {
+          codeName: categoryName,
+          codeType: "CTG",
+          upperCode: selectedDept1.value === "createCategory" ? selectedDept1.upperCode : selectedDept1.value,
+        });
+
+        if (res.data.code === "") {
+          Modal.error({
+            content: "중복된 카테고리명입니다.",
+          });
+        } else {
+          Modal.success({
+            title: "사용가능한 카테고리명입니다.",
+          });
+          setValidateDept1(true);
+          setCategoryCode(res.data.code);
+          setLoading(false);
+        }
+      } catch (error) {
+        errHandler(error);
         setLoading(false);
-      })
-      .catch((error) => {
-        //실패
-        console.log(error);
-        console.log("실패");
+      }
+    }
+  };
+
+  /**
+   * @title 코드타입 중복검사
+   */
+  const reqValidationsCodeType = async () => {
+    let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements/categorys/codetype-validations";
+    setLoading(true);
+
+    if (!errText2 && !errText3) {
+      try {
+        const res = await request.post(url, {
+          codeType: codeType,
+        });
+
+        if (res.data.result === "dup") {
+          Modal.error({
+            content: "중복된 코드타입입니다.",
+          });
+        } else if (res.data.result === "notDup") {
+          Modal.success({
+            title: "사용가능한 코드타입입니다.",
+          });
+          setValidateDept2(true);
+          setLoading(false);
+        }
+      } catch (error) {
+        errHandler(error);
         setLoading(false);
-      });
+      }
+    }
   };
 
   /**
    * @title 카테고리 추가
    */
-  const categorysAdd = () => {
+  const createCategory = async () => {
     let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements/categorys";
     setLoading(true);
 
-    request
-      .post(url, {
-        upperCode: selectedDept1.upperCode,
-        codeDepth: "1",
+    try {
+      await request.post(url, {
+        upperCode: selectedDept1.value === "createCategory" ? selectedDept1.upperCode : selectedDept1.value,
+        codeDepth: selectedDept1.value === "createCategory" ? "1" : "2",
         codeName: categoryName,
         code: categoryCode,
-        codeType: "CTG",
-      })
-      .then((res) => {
-        props.updateCategory();
-        setLoading(false);
-      })
-      .catch((error) => {
-        //실패
-        console.log(error);
-        console.log("실패");
-        setLoading(false);
+        codeType: selectedDept1.value === "createCategory" ? "CTG" : codeType,
       });
+
+      Modal.success({
+        title: "카테고리가 추가되었습니다.",
+      });
+      props.updateCategory();
+      setLoading(false);
+      props.closeCateModal(false);
+    } catch (error) {
+      errHandler(error);
+      setLoading(false);
+    }
+  };
+
+  /**
+   * @title 카테고리 수정
+   */
+  const updateCategory = async () => {
+    let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements/categorys";
+    setLoading(true);
+
+    try {
+      await request.put(url, {
+        codeName: categoryName,
+        code: categoryCode,
+      });
+
+      Modal.success({
+        title: "카테고리가 수정되었습니다.",
+      });
+      props.updateCategory();
+      setLoading(false);
+      props.closeCateModal(false);
+    } catch (error) {
+      errHandler(error);
+      setLoading(false);
+    }
   };
 
   return (
@@ -189,11 +318,11 @@ const CategoryModal = (props) => {
       <Space wrap>
         <Descriptions column={1} bordered>
           <Descriptions.Item label="Dept1">
-            <Select defaultValue="카테고리 추가" style={{ width: 300 }} onChange={handleDept1} options={codeDepth1data} />
+            <Select value={selectedDept1Value} defaultValue="카테고리 추가" style={{ width: 300 }} onChange={handleDept1} options={codeDepth1data} />
           </Descriptions.Item>
-          {categoryEditFlag && (
+          {updateCategoryFlag && (
             <Descriptions.Item label="Dept2">
-              <Select defaultValue="카테고리 수정" style={{ width: 300 }} onChange={handleDept2} options={codeDepth2Data} />
+              <Select value={selectedDept2Value} defaultValue="카테고리 수정" style={{ width: 300 }} onChange={handleDept2} options={codeDepth2Data} />
             </Descriptions.Item>
           )}
           <Descriptions.Item label="카테고리값">
@@ -208,7 +337,7 @@ const CategoryModal = (props) => {
                   setCategoryName(event.target.value);
                 }}
               />
-              {(selectedDept1.value === "categoryAdd" || selectedDept2.value === "categoryAdd") && (
+              {(selectedDept1.value === "createCategory" || selectedDept2.value === "createCategory") && (
                 <>
                   <Button style={{ width: 130, marginLeft: 10 }} className="primaryBtn" onClick={reqValidations}>
                     중복확인
@@ -233,11 +362,13 @@ const CategoryModal = (props) => {
                     setCodeType(event.target.value);
                   }}
                 />
-                <Button style={{ width: 130, marginLeft: 10 }} className="primaryBtn">
+                <Button style={{ width: 130, marginLeft: 10 }} className="primaryBtn" onClick={reqValidationsCodeType}>
                   중복확인
-                  <span style={{ marginLeft: 10 }}>
-                    <CheckOutlined />
-                  </span>
+                  {validateDept2 && (
+                    <span style={{ marginLeft: 10 }}>
+                      <CheckOutlined />
+                    </span>
+                  )}
                 </Button>
               </div>
               {errText2 && <Text type="danger">코드타입은 필수 입력사항입니다.</Text>}
