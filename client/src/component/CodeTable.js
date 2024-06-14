@@ -1,19 +1,20 @@
 import React, { useState } from "react";
 import { LoadingOutlined } from "@ant-design/icons";
-import { Input, Table, Spin, Form, Typography, Popconfirm, Switch, Layout, theme } from "antd";
 import request from "../instance";
 import { errHandler } from "../common/utils";
+import { Input, Table, Spin, Form, Typography, Popconfirm, Switch, Layout, theme } from "antd";
+const { Content } = Layout;
 
 const CodeTable = (props) => {
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
-
   const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState("");
   const isEditing = (record) => record.key === editingKey;
+
+  const {
+    token: { colorBgContainer, borderRadiusLG },
+  } = theme.useToken();
 
   const edit = (record) => {
     form.setFieldsValue({ code: "", codeName: "", codeRemark: "", ...record });
@@ -23,8 +24,6 @@ const CodeTable = (props) => {
   const cancel = () => {
     setEditingKey("");
   };
-
-  const { Content } = Layout;
 
   const updateActiveYn = async (record) => {
     let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements/activation";

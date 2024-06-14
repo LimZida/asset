@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { LoadingOutlined, CheckOutlined } from "@ant-design/icons";
-import { Button, Input, Typography, Modal, Select, Space, Descriptions, Spin } from "antd";
 import request from "../instance";
 import { errHandler } from "../common/utils";
-
+import { LoadingOutlined, CheckOutlined } from "@ant-design/icons";
+import { Button, Input, Typography, Modal, Select, Space, Descriptions, Spin } from "antd";
 const { Text } = Typography;
 
 const CategoryModal = (props) => {
@@ -86,7 +85,7 @@ const CategoryModal = (props) => {
   };
 
   // 저장버튼
-  const handleOk = () => {
+  const updateData = () => {
     if (validateData()) {
       if (selectedDept1.value === "createCategory") {
         createCategory();
@@ -137,7 +136,7 @@ const CategoryModal = (props) => {
     return true;
   };
 
-  const handleCancel = () => {
+  const closeModal = () => {
     initData();
     props.closeCateModal(false);
   };
@@ -257,9 +256,9 @@ const CategoryModal = (props) => {
       await request.post(url, {
         upperCode: selectedDept1.value === "createCategory" ? selectedDept1.upperCode : selectedDept1.value,
         codeDepth: selectedDept1.value === "createCategory" ? "1" : "2",
+        codeType: selectedDept1.value === "createCategory" ? "CTG" : codeType,
         codeName: categoryName,
         code: categoryCode,
-        codeType: selectedDept1.value === "createCategory" ? "CTG" : codeType,
       });
 
       Modal.success({
@@ -303,8 +302,8 @@ const CategoryModal = (props) => {
     <Modal
       title="카테고리 관리"
       open={props.showModal}
-      onOk={handleOk}
-      onCancel={handleCancel}
+      onOk={updateData}
+      onCancel={closeModal}
       okButtonProps={{
         children: "Custom OK",
       }}
