@@ -69,7 +69,6 @@ const CodeTable = (props) => {
       }
     } catch (error) {
       errHandler(error);
-      console.log(error);
     }
   };
 
@@ -77,16 +76,25 @@ const CodeTable = (props) => {
     {
       title: "코드값",
       dataIndex: "code",
+      sorter: (a, b) => {
+        return a.code.localeCompare(b.code);
+      },
     },
     {
       title: "코드명",
       dataIndex: "codeName",
       editable: true,
+      sorter: (a, b) => {
+        return a.codeName.localeCompare(b.codeName);
+      },
     },
     {
       title: "비고",
       dataIndex: "codeRemark",
       editable: true,
+      sorter: (a, b) => {
+        return a.codeRemark.localeCompare(b.codeRemark);
+      },
     },
     {
       title: "활성화",
@@ -99,6 +107,9 @@ const CodeTable = (props) => {
           checked={record.activeYn}
         />
       ),
+      sorter: (a, b) => {
+        return a.activeYn - b.activeYn;
+      },
     },
     {
       title: "",

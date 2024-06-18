@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import { LoadingOutlined } from "@ant-design/icons";
 import request from "../instance";
 import { errHandler } from "../common/utils";
-import { Input, Table, Spin, Form, Typography, Popconfirm, Switch, Layout, theme, Select } from "antd";
+import { Input, Table, Spin, Form, Typography, Popconfirm, Switch, Layout, theme, Select, Button } from "antd";
+import EmployeeModal from "../component/EmployeeModal";
 const { Content } = Layout;
+const { Search } = Input;
 
 const Employee = () => {
   const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
@@ -12,18 +14,28 @@ const Employee = () => {
   const [editingKey, setEditingKey] = useState("");
   const isEditing = (record) => record.key === editingKey;
   const [searchList, setSearchList] = useState();
+  const [originalArray, setOriginalArray] = useState();
   const [deptList, setDeptList] = useState([]);
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [searchValue, setSearchValue] = useState("");
+  const [selectedRow, setSelectedRow] = useState({});
 
   useEffect(() => {
     reqEmployeesData();
     reqDepartmentsData();
   }, []);
+  useEffect(() => {
+    if (searchValue) {
+      const matchingArray = originalArray.filter((element) => element.userName.includes(searchValue) || element.deptName.includes(searchValue) || element.userId.includes(searchValue));
+      setSearchList(matchingArray);
+    } else {
+      setSearchList(originalArray);
+    }
+  }, [searchValue, originalArray]);
 
   /**
    * @title 전직원 조회
    */
-  const reqEmployeesData = async function () {
+  const reqEmployeesData = async () => {
     let url = "http://218.55.79.25:8087/mcnc-mgmts/employee-managements/employees";
     setLoading(true);
 
@@ -33,7 +45,8 @@ const Employee = () => {
       for (var i = 0; i < res.data.length; i++) {
         searchData.push({ key: i, ...res.data[i] });
       }
-      setSearchList(searchData);
+      setOriginalArray([...searchData]);
+      setSearchList([...searchData]);
       setLoading(false);
     } catch (error) {
       errHandler(error);
@@ -44,7 +57,7 @@ const Employee = () => {
   /**
    * @title 부서코드 조회
    */
-  const reqDepartmentsData = async function () {
+  const reqDepartmentsData = async () => {
     let url = "http://218.55.79.25:8087/mcnc-mgmts/employee-managements/departments";
     setLoading(true);
 
@@ -70,6 +83,7 @@ const Employee = () => {
 
   const edit = (record) => {
     form.setFieldsValue({ userName: "", userId: "", deptName: "", ...record });
+    setSelectedRow(record);
     setEditingKey(record.key);
   };
 
@@ -107,7 +121,7 @@ const Employee = () => {
         await request.put(url, {
           userId: record.userId,
           userName: row.userName,
-          userDept: row.deptName,
+          userDept: row.deptName === selectedRow.deptName ? selectedRow.userDept : row.deptName,
         });
 
         setLoading(false);
@@ -119,10 +133,8 @@ const Employee = () => {
       }
     } catch (error) {
       errHandler(error);
-      console.log(error);
     }
   };
-
   const columns = [
     {
       title: "이름",
@@ -130,26 +142,25 @@ const Employee = () => {
       key: "userName",
       editable: true,
       sorter: (a, b) => {
-        const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
-        setSortOrder(newSortOrder);
-        if (newSortOrder === "asc") {
-          return a.userName.localeCompare(b.userName);
-        } else {
-          return b.userName.localeCompare(a.userName);
-        }
+        return a.userName.localeCompare(b.userName);
       },
     },
     {
       title: "아이디",
       dataIndex: "userId",
-      key: "userName",
-      sorter: (a, b) => a.userId - b.userId,
+      key: "userId",
+      sorter: (a, b) => {
+        return a.userId.localeCompare(b.userId);
+      },
     },
     {
       title: "부서",
       dataIndex: "deptName",
+      key: "deptName",
       editable: true,
-      sorter: (a, b) => a.deptName - b.deptName,
+      sorter: (a, b) => {
+        return a.deptName.localeCompare(b.deptName);
+      },
     },
     {
       title: "활성화",
@@ -162,6 +173,9 @@ const Employee = () => {
           checked={record.activeYn}
         />
       ),
+      sorter: (a, b) => {
+        return a.activeYn - b.activeYn;
+      },
     },
     {
       title: "",
@@ -206,6 +220,15 @@ const Employee = () => {
     };
   });
 
+  const [isModalOpen2, setIsModalOpen2] = useState(false);
+  const showModal2 = () => {
+    setIsModalOpen2(true);
+  };
+
+  const closeCodeModal = (data) => {
+    setIsModalOpen2(data);
+  };
+
   const EditableCell = ({ editing, dataIndex, title, inputType, record, index, children, ...restProps }) => {
     return (
       <td {...restProps}>
@@ -220,7 +243,7 @@ const Employee = () => {
               },
             ]}
           >
-            {title === "부서" ? <Select checked={record.deptName} options={deptList} /> : <Input />}
+            {title === "부서" ? <Select value={record.deptName} options={deptList} /> : <Input />}
           </Form.Item>
         ) : (
           children
@@ -239,6 +262,18 @@ const Employee = () => {
         borderRadius: borderRadiusLG,
       }}
     >
+      <div style={{ width: "100%", marginBottom: 20, display: "flex", justifyContent: "space-between" }}>
+        <Search
+          style={{ width: "40%" }}
+          value={searchValue}
+          onChange={(event) => {
+            setSearchValue(event.target.value);
+          }}
+        />
+        <Button className="primaryBtn" onClick={showModal2}>
+          직원 추가
+        </Button>
+      </div>
       <Form form={form} component={false}>
         <Table
           loading={loading ? { indicator: <Spin indicator={antIcon} /> } : false}
@@ -256,6 +291,7 @@ const Employee = () => {
           dataSource={searchList}
         />
       </Form>
+      <EmployeeModal showModal={isModalOpen2} closeCodeModal={closeCodeModal} deptList={deptList} updateEmployee={reqEmployeesData} />
     </Content>
   );
 };

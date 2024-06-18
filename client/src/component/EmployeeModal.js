@@ -1,26 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { Button, Input, Modal, Space, Descriptions, Spin } from "antd";
+import { Button, Input, Modal, Space, Descriptions, Spin, Select } from "antd";
 import { LoadingOutlined, CheckOutlined } from "@ant-design/icons";
 import request from "../instance";
 import { errHandler } from "../common/utils";
 
 const CategoryModal = (props) => {
-  const [code, setCode] = useState("");
-  const [codeName, setCodeName] = useState("");
-  const [codeRemark, setCodeRemark] = useState("");
+  const [userName, setUserName] = useState("");
+  const [userId, setUserId] = useState("");
+  const [deptValue, setDeptValue] = useState(""); // 추가된 상태
   const [validateDept, setValidateDept] = useState(false);
   const [loading, setLoading] = useState(false);
   const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
 
   useEffect(() => {
     setValidateDept(false);
-  }, [codeName]);
+  }, [userId]);
 
   const initData = () => {
     setValidateDept(false);
-    setCode("");
-    setCodeName("");
-    setCodeRemark("");
+    setUserName("");
+    setUserId("");
   };
 
   const handleOk = () => {
@@ -28,6 +27,7 @@ const CategoryModal = (props) => {
       Modal.error({
         title: "코드명 중복확인이 필요합니다.",
       });
+      // props.closeCodeModal(false);
       return;
     }
     createCode();
@@ -39,37 +39,34 @@ const CategoryModal = (props) => {
   };
 
   /**
-   * @title 코드 중복검사
+   * @title 아이디 중복검사
    */
   const reqValidations = async () => {
-    if (!codeName) {
+    if (!userId) {
       Modal.error({
-        title: "코드명을 입력해주세요.",
+        title: "아이디를 입력해주세요.",
       });
       return;
     }
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements/validations";
+    let url = "http://218.55.79.25:8087/mcnc-mgmts/employee-managements/employees/validations";
     setLoading(true);
 
     try {
       const res = await request.post(url, {
-        codeCtg: props.selected.value,
-        codeName: codeName,
-        codeType: props.selected.codeInnerType.replace(/[()]/g, ""),
+        userId: userId,
       });
-      if (res.data.code) {
+
+      if (res.data.userSelectResult === "dup") {
+        Modal.error({
+          content: "중복된 아이디입니다.",
+        });
+      } else if (res.data.userSelectResult === "notDup") {
         Modal.success({
-          title: "사용가능한 코드명입니다.",
+          title: "사용가능한 아이디입니다.",
         });
         setValidateDept(true);
-      } else {
-        Modal.error({
-          content: "중복된 코드명입니다.",
-        });
-        setValidateDept(false);
+        setLoading(false);
       }
-      setCode(res.data.code);
-      setLoading(false);
     } catch (error) {
       errHandler(error);
       setLoading(false);
@@ -77,26 +74,35 @@ const CategoryModal = (props) => {
   };
 
   /**
-   * @title 코드 추가
+   * @title 임직원 추가 수정중
    */
   const createCode = async () => {
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements";
+    let url = "http://218.55.79.25:8087/mcnc-mgmts/employee-managements/employees";
     setLoading(true);
+    if (!userName) {
+      Modal.error({
+        title: "이름을 입력해주세요.",
+      });
+      return;
+    }
+    if (!deptValue) {
+      Modal.error({
+        title: "부서를 선택해주세요.",
+      });
+      return;
+    }
 
     try {
       await request.post(url, {
-        codeCtg: props.selected.value,
-        code: code,
-        codeName: codeName,
-        codeType: props.selected.codeInnerType.replace(/[()]/g, ""),
-        codeRemark: codeRemark,
+        userId: userId,
+        userDept: deptValue,
+        userName: userName,
       });
 
-      props.updateCategory();
+      props.updateEmployee();
       Modal.success({
-        title: "코드가 추가되었습니다.",
+        title: "직원이 추가되었습니다.",
       });
-      props.updateCode(props.selected.value);
       setLoading(false);
       props.closeCodeModal(false);
     } catch (error) {
@@ -107,7 +113,7 @@ const CategoryModal = (props) => {
 
   return (
     <Modal
-      title="코드 추가"
+      title="직원 추가"
       open={props.showModal}
       onOk={handleOk}
       onCancel={handleCancel}
@@ -123,16 +129,16 @@ const CategoryModal = (props) => {
     >
       <Space wrap>
         <Descriptions column={1} bordered>
-          <Descriptions.Item label="코드값">
-            <Input style={{ width: 300 }} value={code} disabled />
+          <Descriptions.Item label="이름">
+            <Input style={{ width: 300 }} value={userName} onChange={(e) => setUserName(e.target.value)} />
           </Descriptions.Item>
-          <Descriptions.Item label="코드명">
+          <Descriptions.Item label="아이디">
             <div>
               <Input
                 style={{ width: 160 }}
-                value={codeName}
+                value={userId}
                 onChange={(event) => {
-                  setCodeName(event.target.value);
+                  setUserId(event.target.value);
                 }}
               />
               <Button style={{ width: 130, marginLeft: 10 }} className="primaryBtn" onClick={reqValidations}>
@@ -145,8 +151,8 @@ const CategoryModal = (props) => {
               </Button>
             </div>
           </Descriptions.Item>
-          <Descriptions.Item label="비고">
-            <Input style={{ width: 300 }} value={codeRemark} onChange={(e) => setCodeRemark(e.target.value)} />
+          <Descriptions.Item label="부서">
+            <Select style={{ width: 300 }} options={props.deptList} value={deptValue} onChange={(value) => setDeptValue(value)} />
           </Descriptions.Item>
         </Descriptions>
       </Space>

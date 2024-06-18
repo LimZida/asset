@@ -7,7 +7,7 @@ import CodeModal from "../component/CodeModal";
 import CodeTable from "../component/CodeTable";
 import { errHandler } from "../common/utils";
 
-function addToParent(parentArray, child, parentCode) {
+const addToParent = (parentArray, child, parentCode) => {
   for (let parent of parentArray) {
     if (parent.code === parentCode) {
       parent.children = parent.children || [];
@@ -21,9 +21,9 @@ function addToParent(parentArray, child, parentCode) {
     }
   }
   return false;
-}
+};
 
-function MenuDataSetting(data) {
+const MenuDataSetting = (data) => {
   const result = [];
   for (let item of data) {
     if (item.codeDepth === 0) {
@@ -66,7 +66,7 @@ function MenuDataSetting(data) {
   }
 
   return result;
-}
+};
 
 const Codes = () => {
   const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
@@ -75,6 +75,7 @@ const Codes = () => {
   const [loading, setLoading] = useState(false);
   const [searchList, setSearchList] = useState();
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [openMenuList, setOpenMenuList] = useState([]);
 
   const {
     token: { colorBgContainer },
@@ -89,7 +90,7 @@ const Codes = () => {
   /**
    * @title 메뉴 조회
    */
-  const reqMenuData = async function () {
+  const reqMenuData = async () => {
     let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements/categorys";
     setLoading(true);
 
@@ -98,6 +99,8 @@ const Codes = () => {
       setOriginMenuData(res.data);
       let menuData = MenuDataSetting([...res.data]);
       setMenuList(menuData);
+      const result = [...res.data].filter((item) => item.codeDepth === 0 || item.codeDepth === 1).map((item) => item.code);
+      setOpenMenuList(result);
       setLoading(false);
     } catch (error) {
       errHandler(error);
@@ -108,7 +111,7 @@ const Codes = () => {
   /**
    * @title 코드 조회
    */
-  const reqCodeData = async function (code) {
+  const reqCodeData = async (code) => {
     let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements";
     setLoading(true);
 
@@ -179,31 +182,35 @@ const Codes = () => {
           </Button>
           <Menu
             mode="inline"
-            defaultOpenKeys={["CTG01", "CTG0101", "CTG0102", "CTG0103"]}
+            // defaultOpenKeys={openMenuList}
+            openKeys={openMenuList}
+            onOpenChange={(keys) => setOpenMenuList(keys)}
             style={{ height: `calc( 100% - 32px )`, borderRight: 0 }}
             items={menuList}
-            onClick={function ({ item, key, keyPath, domEvent }) {
+            onClick={({ item, key, keyPath, domEvent }) => {
               setSelectedMenu(keyPath);
               reqCodeData(key);
             }}
           />
         </Sider>
         <Layout style={{ padding: "0 24px 24px" }}>
-          <Breadcrumb style={{ margin: "16px 0" }}>
+          <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Breadcrumb style={{ margin: "16px 0" }}>
+              {selectedRowKeys.map((selected, idx) => (
+                <Breadcrumb.Item key={idx}>{selected.codeName}</Breadcrumb.Item>
+              ))}
+            </Breadcrumb>
             {selectedRowKeys[0] && (
-              <Button style={{ width: 90, marginRight: 10 }} className="primaryBtn" onClick={showModal2}>
-                코드추가
+              <Button className="primaryBtn" onClick={showModal2}>
+                코드 추가
               </Button>
             )}
-            {selectedRowKeys.map((selected, idx) => (
-              <Breadcrumb.Item key={idx}>{selected.codeName}</Breadcrumb.Item>
-            ))}
-          </Breadcrumb>
+          </div>
           <CodeTable searchList={searchList} updateCategory={updateCategory} updateCode={updateCode}></CodeTable>
         </Layout>
       </Layout>
       <CategoryModal showModal={isModalOpen} originMenuData={originMenuData} closeCateModal={closeCateModal} updateCategory={updateCategory} />
-      <CodeModal showModal={isModalOpen2} selected={selectedRowKeys[selectedRowKeys.length - 1]} closeCodeModal={closeCodeModal} />
+      <CodeModal showModal={isModalOpen2} selected={selectedRowKeys[selectedRowKeys.length - 1]} closeCodeModal={closeCodeModal} updateCategory={updateCategory} updateCode={updateCode} />
     </Layout>
   );
 };
