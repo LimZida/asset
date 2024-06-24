@@ -30,7 +30,7 @@ function Dashboard() {
   };
 
   const reqHwData = async () => {
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/dashboards/analytics/hardware-details";
+    let url = "http://218.55.79.57:8087/mcnc-mgmts/dashboards/analytics/hardware-details";
     const res = await request.get(url);
     const searchData = res.data.map((item, i) => ({
       key: i,
@@ -42,7 +42,7 @@ function Dashboard() {
   };
 
   const reqSwData = async () => {
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/dashboards/analytics/software-details";
+    let url = "http://218.55.79.57:8087/mcnc-mgmts/dashboards/analytics/software-details";
     const res = await request.get(url);
     const searchData = res.data.map((item, i) => ({
       key: i,
@@ -54,7 +54,7 @@ function Dashboard() {
   };
 
   const reqAnalyticsData = async () => {
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/dashboards/analytics/in-outs?rowCount=10";
+    let url = "http://218.55.79.57:8087/mcnc-mgmts/dashboards/analytics/in-outs?rowCount=10";
     const res = await request.get(url);
     const searchData = res.data.map((item, i) => ({
       key: i,

@@ -184,7 +184,7 @@ const CategoryModal = (props) => {
    * @title 카테고리 중복검사
    */
   const reqValidations = async () => {
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements/categorys/validations";
+    let url = "http://218.55.79.57:8087/mcnc-mgmts/code-managements/categorys/validations";
     setLoading(true);
 
     if (!errText1) {
@@ -218,7 +218,7 @@ const CategoryModal = (props) => {
    * @title 코드타입 중복검사
    */
   const reqValidationsCodeType = async () => {
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements/categorys/codetype-validations";
+    let url = "http://218.55.79.57:8087/mcnc-mgmts/code-managements/categorys/codetype-validations";
     setLoading(true);
 
     if (!errText2 && !errText3) {
@@ -249,7 +249,7 @@ const CategoryModal = (props) => {
    * @title 카테고리 추가
    */
   const createCategory = async () => {
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements/categorys";
+    let url = "http://218.55.79.57:8087/mcnc-mgmts/code-managements/categorys";
     setLoading(true);
 
     try {
@@ -277,7 +277,7 @@ const CategoryModal = (props) => {
    * @title 카테고리 수정
    */
   const updateCategory = async () => {
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements/categorys";
+    let url = "http://218.55.79.57:8087/mcnc-mgmts/code-managements/categorys";
     setLoading(true);
 
     try {

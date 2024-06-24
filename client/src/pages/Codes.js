@@ -91,7 +91,7 @@ const Codes = () => {
    * @title 메뉴 조회
    */
   const reqMenuData = async () => {
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements/categorys";
+    let url = "http://218.55.79.57:8087/mcnc-mgmts/code-managements/categorys";
     setLoading(true);
 
     try {
@@ -112,7 +112,7 @@ const Codes = () => {
    * @title 코드 조회
    */
   const reqCodeData = async (code) => {
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements";
+    let url = "http://218.55.79.57:8087/mcnc-mgmts/code-managements";
     setLoading(true);
 
     try {

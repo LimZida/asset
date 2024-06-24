@@ -65,7 +65,7 @@ const History = () => {
    * @title 검색필터 조회
    */
   const reqAnalyticsData = async () => {
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/history/analytics";
+    let url = "http://218.55.79.57:8087/mcnc-mgmts/history/analytics";
     setLoading(true);
     try {
       const res = await request.get(url);
@@ -102,7 +102,7 @@ const History = () => {
    * @title 히스토리 조회
    */
   const reqHistoryData = async () => {
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/history/history-total";
+    let url = "http://218.55.79.57:8087/mcnc-mgmts/history/history-total";
     setLoading(true);
     const startDate = dateSetting[1].subtract(1, "year").format("YYYYMMDD") + "000000";
     const endDate = dateSetting[0].format("YYYYMMDD") + "235959";

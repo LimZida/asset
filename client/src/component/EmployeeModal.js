@@ -48,7 +48,7 @@ const CategoryModal = (props) => {
       });
       return;
     }
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/employee-managements/employees/validations";
+    let url = "http://218.55.79.57:8087/mcnc-mgmts/employee-managements/employees/validations";
     setLoading(true);
 
     try {
@@ -77,7 +77,7 @@ const CategoryModal = (props) => {
    * @title 임직원 추가 수정중
    */
   const createCode = async () => {
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/employee-managements/employees";
+    let url = "http://218.55.79.57:8087/mcnc-mgmts/employee-managements/employees";
     setLoading(true);
     if (!userName) {
       Modal.error({

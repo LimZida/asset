@@ -48,7 +48,7 @@ const CategoryModal = (props) => {
       });
       return;
     }
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements/validations";
+    let url = "http://218.55.79.57:8087/mcnc-mgmts/code-managements/validations";
     setLoading(true);
 
     try {
@@ -80,7 +80,7 @@ const CategoryModal = (props) => {
    * @title 코드 추가
    */
   const createCode = async () => {
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements";
+    let url = "http://218.55.79.57:8087/mcnc-mgmts/code-managements";
     setLoading(true);
 
     try {

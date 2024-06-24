@@ -36,7 +36,7 @@ const Employee = () => {
    * @title 전직원 조회
    */
   const reqEmployeesData = async () => {
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/employee-managements/employees";
+    let url = "http://218.55.79.57:8087/mcnc-mgmts/employee-managements/employees";
     setLoading(true);
 
     try {
@@ -58,7 +58,7 @@ const Employee = () => {
    * @title 부서코드 조회
    */
   const reqDepartmentsData = async () => {
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/employee-managements/departments";
+    let url = "http://218.55.79.57:8087/mcnc-mgmts/employee-managements/departments";
     setLoading(true);
 
     try {
@@ -92,7 +92,7 @@ const Employee = () => {
   };
 
   const updateActiveYn = async (record) => {
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/employee-managements/employees/activation";
+    let url = "http://218.55.79.57:8087/mcnc-mgmts/employee-managements/employees/activation";
     setLoading(true);
 
     try {
@@ -114,7 +114,7 @@ const Employee = () => {
   const updateEmployee = async (record) => {
     try {
       const row = await form.validateFields();
-      let url = "http://218.55.79.25:8087/mcnc-mgmts/employee-managements/employees";
+      let url = "http://218.55.79.57:8087/mcnc-mgmts/employee-managements/employees";
       setLoading(true);
 
       try {

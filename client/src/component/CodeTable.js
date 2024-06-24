@@ -26,7 +26,7 @@ const CodeTable = (props) => {
   };
 
   const updateActiveYn = async (record) => {
-    let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements/activation";
+    let url = "http://218.55.79.57:8087/mcnc-mgmts/code-managements/activation";
     setLoading(true);
 
     try {
@@ -49,7 +49,7 @@ const CodeTable = (props) => {
   const updateCode = async (record) => {
     try {
       const row = await form.validateFields();
-      let url = "http://218.55.79.25:8087/mcnc-mgmts/code-managements";
+      let url = "http://218.55.79.57:8087/mcnc-mgmts/code-managements";
       setLoading(true);
 
       try {
