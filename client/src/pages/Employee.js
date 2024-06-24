@@ -9,7 +9,7 @@ const { Search } = Input;
 
 const Employee = () => {
   const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState("");
   const isEditing = (record) => record.key === editingKey;
@@ -20,10 +20,6 @@ const Employee = () => {
   const [selectedRow, setSelectedRow] = useState({});
 
   useEffect(() => {
-    reqEmployeesData();
-    reqDepartmentsData();
-  }, []);
-  useEffect(() => {
     if (searchValue) {
       const matchingArray = originalArray.filter((element) => element.userName.includes(searchValue) || element.deptName.includes(searchValue) || element.userId.includes(searchValue));
       setSearchList(matchingArray);
@@ -32,26 +28,31 @@ const Employee = () => {
     }
   }, [searchValue, originalArray]);
 
+  useEffect(() => {
+    fetchData().finally(() => setLoading(false));
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      await reqEmployeesData();
+      await reqDepartmentsData();
+    } catch (error) {
+      errHandler(error);
+    }
+  };
+
   /**
    * @title 전직원 조회
    */
   const reqEmployeesData = async () => {
     let url = "http://218.55.79.57:8087/mcnc-mgmts/employee-managements/employees";
-    setLoading(true);
-
-    try {
-      const res = await request.get(url);
-      var searchData = [];
-      for (var i = 0; i < res.data.length; i++) {
-        searchData.push({ key: i, ...res.data[i] });
-      }
-      setOriginalArray([...searchData]);
-      setSearchList([...searchData]);
-    } catch (error) {
-      errHandler(error);
-    } finally {
-      setLoading(false);
+    const res = await request.get(url);
+    var searchData = [];
+    for (var i = 0; i < res.data.length; i++) {
+      searchData.push({ key: i, ...res.data[i] });
     }
+    setOriginalArray([...searchData]);
+    setSearchList([...searchData]);
   };
 
   /**
@@ -59,22 +60,14 @@ const Employee = () => {
    */
   const reqDepartmentsData = async () => {
     let url = "http://218.55.79.57:8087/mcnc-mgmts/employee-managements/departments";
-    setLoading(true);
+    const res = await request.get(url);
 
-    try {
-      const res = await request.get(url);
-
-      let departments = res.data.filter((item) => {
-        item.label = item.deptName;
-        item.value = item.deptCode;
-        return true;
-      });
-      setDeptList(departments);
-    } catch (error) {
-      errHandler(error);
-    } finally {
-      setLoading(false);
-    }
+    let departments = res.data.filter((item) => {
+      item.label = item.deptName;
+      item.value = item.deptCode;
+      return true;
+    });
+    setDeptList(departments);
   };
 
   const {

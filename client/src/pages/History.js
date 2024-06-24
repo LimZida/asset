@@ -9,7 +9,7 @@ const { RangePicker } = DatePicker;
 
 const History = () => {
   const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [searchList, setSearchList] = useState();
   const [searchValue, setSearchValue] = useState("");
   const [dateSetting, setDateSetting] = useState([dayjs(), dayjs().subtract(1, "year")]);
@@ -57,45 +57,46 @@ const History = () => {
   ];
 
   useEffect(() => {
-    reqHistoryData();
-    reqAnalyticsData();
+    fetchData().finally(() => setLoading(false));
   }, []);
+
+  const fetchData = async () => {
+    try {
+      await reqAnalyticsData();
+      await reqHistoryData();
+    } catch (error) {
+      errHandler(error);
+    }
+  };
 
   /**
    * @title 검색필터 조회
    */
   const reqAnalyticsData = async () => {
     let url = "http://218.55.79.57:8087/mcnc-mgmts/history/analytics";
-    setLoading(true);
-    try {
-      const res = await request.get(url);
+    const res = await request.get(url);
 
-      let hwList = res.data.hwList.filter((item) => {
-        item.label = item.codeName;
-        item.value = item.code;
-        return true;
-      });
-      let swList = res.data.swList.filter((item) => {
-        item.label = item.codeName;
-        item.value = item.code;
-        return true;
-      });
-      hwList.unshift({ value: "ALL", label: "전체" });
-      setAllList([...hwList, ...swList]);
-      setHwList(hwList);
-      swList.unshift({ value: "ALL", label: "전체" });
-      setSwList(swList);
-      let assetFlag = [
-        { value: "ALL", label: "전체" },
-        { value: "hwList", label: "하드웨어" },
-        { value: "swList", label: "소프트웨어" },
-      ];
-      setAssetType(assetFlag);
-    } catch (error) {
-      errHandler(error);
-    } finally {
-      setLoading(false);
-    }
+    let hwList = res.data.hwList.filter((item) => {
+      item.label = item.codeName;
+      item.value = item.code;
+      return true;
+    });
+    let swList = res.data.swList.filter((item) => {
+      item.label = item.codeName;
+      item.value = item.code;
+      return true;
+    });
+    hwList.unshift({ value: "ALL", label: "전체" });
+    setAllList([...hwList, ...swList]);
+    setHwList(hwList);
+    swList.unshift({ value: "ALL", label: "전체" });
+    setSwList(swList);
+    let assetFlag = [
+      { value: "ALL", label: "전체" },
+      { value: "hwList", label: "하드웨어" },
+      { value: "swList", label: "소프트웨어" },
+    ];
+    setAssetType(assetFlag);
   };
 
   /**
@@ -103,48 +104,41 @@ const History = () => {
    */
   const reqHistoryData = async () => {
     let url = "http://218.55.79.57:8087/mcnc-mgmts/history/history-total";
-    setLoading(true);
     const startDate = dateSetting[1].subtract(1, "year").format("YYYYMMDD") + "000000";
     const endDate = dateSetting[0].format("YYYYMMDD") + "235959";
 
-    try {
-      const initialResponse = await request.post(url, {
-        assetHistoryList: {
-          assetFlag: "ALL",
-          assetCategory: "ALL",
-          historyCategory: "ALL",
-          endDate: endDate,
-          pageCntLimit: 1,
-          keyword: "",
-          startDate: startDate,
-          startIdx: 0,
-        },
-      });
+    const initialResponse = await request.post(url, {
+      assetHistoryList: {
+        assetFlag: "ALL",
+        assetCategory: "ALL",
+        historyCategory: "ALL",
+        endDate: endDate,
+        pageCntLimit: 1,
+        keyword: "",
+        startDate: startDate,
+        startIdx: 0,
+      },
+    });
 
-      const totalCnt = initialResponse.data.assignHistoryTotalCnt;
+    const totalCnt = initialResponse.data.assignHistoryTotalCnt;
 
-      const res = await request.post(url, {
-        assetHistoryList: {
-          assetFlag: selectedFilter1,
-          assetCategory: selectedFilter2,
-          historyCategory: selectedFilter3,
-          endDate: endDate,
-          pageCntLimit: totalCnt,
-          keyword: searchValue,
-          startDate: startDate,
-          startIdx: 0,
-        },
-      });
-      const searchData = res.data.assetHistoryList.map((item, index) => ({
-        key: index,
-        ...item,
-      }));
-      setSearchList([...searchData]);
-    } catch (error) {
-      errHandler(error);
-    } finally {
-      setLoading(false);
-    }
+    const res = await request.post(url, {
+      assetHistoryList: {
+        assetFlag: selectedFilter1,
+        assetCategory: selectedFilter2,
+        historyCategory: selectedFilter3,
+        endDate: endDate,
+        pageCntLimit: totalCnt,
+        keyword: searchValue,
+        startDate: startDate,
+        startIdx: 0,
+      },
+    });
+    const searchData = res.data.assetHistoryList.map((item, index) => ({
+      key: index,
+      ...item,
+    }));
+    setSearchList([...searchData]);
   };
 
   const onChange = (date, dateString) => {
@@ -231,42 +225,48 @@ const History = () => {
   ];
 
   return (
-    <Content
-      style={{
-        padding: 24,
-        margin: 0,
-        minHeight: 280,
-        background: colorBgContainer,
-        borderRadius: borderRadiusLG,
-      }}
-    >
-      <Space wrap style={{ marginBottom: 20, width: "100%" }}>
-        <Descriptions bordered style={{ width: "100%" }}>
-          <Descriptions.Item label="대분류">
-            <Select style={{ width: 100 }} value={selectedFilter1} options={assetType} onChange={onChangeAsset1} />
-          </Descriptions.Item>
-          <Descriptions.Item label="소분류">
-            <Select style={{ width: 100 }} value={selectedFilter2} options={selectedFilter1 === "ALL" ? allList : selectedFilter1 === "hwList" ? hwList : swList} onChange={onChangeAsset2} />
-          </Descriptions.Item>
-          <Descriptions.Item label="검색대상">
-            <Select style={{ width: 150 }} value={selectedFilter3} options={assetList} onChange={onChangeAsset3} />
-          </Descriptions.Item>
-        </Descriptions>
-      </Space>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
-        <RangePicker onChange={onChange} style={{ marginRight: 20, width: 340 }} format="YYYYMMDD" value={dateSetting} />
-        <Input
-          value={searchValue}
-          onChange={(event) => {
-            setSearchValue(event.target.value);
+    <>
+      {loading ? (
+        <Spin indicator={antIcon} style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "400px" }} />
+      ) : (
+        <Content
+          style={{
+            padding: 24,
+            margin: 0,
+            minHeight: 280,
+            background: colorBgContainer,
+            borderRadius: borderRadiusLG,
           }}
-        />
-        <Button className="primaryBtn" style={{ marginLeft: 20 }} onClick={reqHistoryData}>
-          검색
-        </Button>
-      </div>
-      <Table loading={loading ? { indicator: <Spin indicator={antIcon} /> } : false} bordered rowClassName="editable-row" columns={columns} dataSource={searchList} />
-    </Content>
+        >
+          <Space wrap style={{ marginBottom: 20, width: "100%" }}>
+            <Descriptions bordered style={{ width: "100%" }}>
+              <Descriptions.Item label="대분류">
+                <Select style={{ width: 100 }} value={selectedFilter1} options={assetType} onChange={onChangeAsset1} />
+              </Descriptions.Item>
+              <Descriptions.Item label="소분류">
+                <Select style={{ width: 100 }} value={selectedFilter2} options={selectedFilter1 === "ALL" ? allList : selectedFilter1 === "hwList" ? hwList : swList} onChange={onChangeAsset2} />
+              </Descriptions.Item>
+              <Descriptions.Item label="검색대상">
+                <Select style={{ width: 150 }} value={selectedFilter3} options={assetList} onChange={onChangeAsset3} />
+              </Descriptions.Item>
+            </Descriptions>
+          </Space>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+            <RangePicker onChange={onChange} style={{ marginRight: 20, width: 340 }} format="YYYYMMDD" value={dateSetting} />
+            <Input
+              value={searchValue}
+              onChange={(event) => {
+                setSearchValue(event.target.value);
+              }}
+            />
+            <Button className="primaryBtn" style={{ marginLeft: 20 }} onClick={reqHistoryData}>
+              검색
+            </Button>
+          </div>
+          <Table bordered rowClassName="editable-row" columns={columns} dataSource={searchList} />
+        </Content>
+      )}
+    </>
   );
 };
 

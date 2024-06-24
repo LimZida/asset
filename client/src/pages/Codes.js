@@ -72,7 +72,7 @@ const Codes = () => {
   const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
   const [menuList, setMenuList] = useState([]);
   const [originMenuData, setOriginMenuData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [searchList, setSearchList] = useState();
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [openMenuList, setOpenMenuList] = useState([]);
@@ -92,7 +92,6 @@ const Codes = () => {
    */
   const reqMenuData = async () => {
     let url = "http://218.55.79.57:8087/mcnc-mgmts/code-managements/categorys";
-    setLoading(true);
 
     try {
       const res = await request.get(url);
@@ -182,7 +181,6 @@ const Codes = () => {
           </Button>
           <Menu
             mode="inline"
-            // defaultOpenKeys={openMenuList}
             openKeys={openMenuList}
             onOpenChange={(keys) => setOpenMenuList(keys)}
             style={{ height: `calc( 100% - 32px )`, borderRight: 0 }}
