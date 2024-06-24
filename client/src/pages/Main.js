@@ -4,8 +4,7 @@ import Softwares from "./Softwares.js";
 import Codes from "./Codes.js";
 import Employee from "./Employee.js";
 import History from "./History.js";
-import PieChart from "../component/PieChart.js";
-
+import Dashboard from "./Dashboard.js";
 import { Routes, Route, Link } from "react-router-dom";
 import React, { useState } from "react";
 import { HddOutlined, HistoryOutlined, LayoutOutlined, SettingOutlined, UserOutlined, LaptopOutlined } from "@ant-design/icons";
@@ -76,7 +75,7 @@ function Main() {
             }}
           >
             <Routes>
-              <Route path="/" element={<PieChart />} />
+              <Route path="/" element={<Dashboard />} />
               <Route path="/hardwares" element={<Hardwares />} />
               <Route path="/softwares" element={<Softwares />} />
               <Route path="/codes" element={<Codes />} />

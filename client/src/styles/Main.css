@@ -34,6 +34,10 @@
     color: white !important;
   }
 
+  canvas {
+    height: 300px !important;
+  }
+
   /* .ant-input-search {
     float: right !important;
   } */

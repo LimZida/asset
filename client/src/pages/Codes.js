@@ -101,9 +101,9 @@ const Codes = () => {
       setMenuList(menuData);
       const result = [...res.data].filter((item) => item.codeDepth === 0 || item.codeDepth === 1).map((item) => item.code);
       setOpenMenuList(result);
-      setLoading(false);
     } catch (error) {
       errHandler(error);
+    } finally {
       setLoading(false);
     }
   };
@@ -126,9 +126,9 @@ const Codes = () => {
         searchData.push({ key: i, ...res.data.codeList[i] });
       }
       setSearchList(searchData);
-      setLoading(false);
     } catch (error) {
       errHandler(error);
+    } finally {
       setLoading(false);
     }
   };

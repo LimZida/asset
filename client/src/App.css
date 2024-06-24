@@ -58,3 +58,20 @@
     transform: rotate(360deg);
   }
 }
+.apexcharts-legend {
+  display: flex !important;
+  justify-content: center !important;
+  min-width: 100px !important;
+}
+
+.apexcharts-legend-series {
+  text-align: justify;
+}
+
+.ant-table-row{
+  font-size: 13px !important;
+}
+
+tr td:first-child {
+  font-weight: bold !important;
+}

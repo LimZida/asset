@@ -205,10 +205,10 @@ const CategoryModal = (props) => {
           });
           setValidateDept1(true);
           setCategoryCode(res.data.code);
-          setLoading(false);
         }
       } catch (error) {
         errHandler(error);
+      } finally {
         setLoading(false);
       }
     }
@@ -236,10 +236,10 @@ const CategoryModal = (props) => {
             title: "사용가능한 코드타입입니다.",
           });
           setValidateDept2(true);
-          setLoading(false);
         }
       } catch (error) {
         errHandler(error);
+      } finally {
         setLoading(false);
       }
     }
@@ -265,10 +265,10 @@ const CategoryModal = (props) => {
         title: "카테고리가 추가되었습니다.",
       });
       props.updateCategory();
-      setLoading(false);
       props.closeCateModal(false);
     } catch (error) {
       errHandler(error);
+    } finally {
       setLoading(false);
     }
   };
@@ -290,10 +290,10 @@ const CategoryModal = (props) => {
         title: "카테고리가 수정되었습니다.",
       });
       props.updateCategory();
-      setLoading(false);
       props.closeCateModal(false);
     } catch (error) {
       errHandler(error);
+    } finally {
       setLoading(false);
     }
   };

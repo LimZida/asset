@@ -47,9 +47,9 @@ const Employee = () => {
       }
       setOriginalArray([...searchData]);
       setSearchList([...searchData]);
-      setLoading(false);
     } catch (error) {
       errHandler(error);
+    } finally {
       setLoading(false);
     }
   };
@@ -70,9 +70,9 @@ const Employee = () => {
         return true;
       });
       setDeptList(departments);
-      setLoading(false);
     } catch (error) {
       errHandler(error);
+    } finally {
       setLoading(false);
     }
   };
@@ -101,9 +101,9 @@ const Employee = () => {
       });
 
       reqEmployeesData();
-      setLoading(false);
     } catch (error) {
       errHandler(error);
+    } finally {
       setLoading(false);
     }
   };
@@ -124,11 +124,11 @@ const Employee = () => {
           userDept: row.deptName === selectedRow.deptName ? selectedRow.userDept : row.deptName,
         });
 
-        setLoading(false);
         setEditingKey("");
         reqEmployeesData();
       } catch (error) {
         errHandler(error);
+      } finally {
         setLoading(false);
       }
     } catch (error) {

@@ -65,10 +65,10 @@ const CategoryModal = (props) => {
           title: "사용가능한 아이디입니다.",
         });
         setValidateDept(true);
-        setLoading(false);
       }
     } catch (error) {
       errHandler(error);
+    } finally {
       setLoading(false);
     }
   };
@@ -103,10 +103,10 @@ const CategoryModal = (props) => {
       Modal.success({
         title: "직원이 추가되었습니다.",
       });
-      setLoading(false);
       props.closeCodeModal(false);
     } catch (error) {
       errHandler(error);
+    } finally {
       setLoading(false);
     }
   };

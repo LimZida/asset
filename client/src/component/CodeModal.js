@@ -69,9 +69,9 @@ const CategoryModal = (props) => {
         setValidateDept(false);
       }
       setCode(res.data.code);
-      setLoading(false);
     } catch (error) {
       errHandler(error);
+    } finally {
       setLoading(false);
     }
   };
@@ -97,10 +97,10 @@ const CategoryModal = (props) => {
         title: "코드가 추가되었습니다.",
       });
       props.updateCode(props.selected.value);
-      setLoading(false);
       props.closeCodeModal(false);
     } catch (error) {
       errHandler(error);
+    } finally {
       setLoading(false);
     }
   };

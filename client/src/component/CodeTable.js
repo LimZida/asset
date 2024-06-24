@@ -35,10 +35,10 @@ const CodeTable = (props) => {
       });
 
       props.updateCategory();
-      setLoading(false);
       props.updateCode(record.codeCtg);
     } catch (error) {
       errHandler(error);
+    } finally {
       setLoading(false);
     }
   };
@@ -60,11 +60,11 @@ const CodeTable = (props) => {
         });
 
         props.updateCategory();
-        setLoading(false);
         setEditingKey("");
         props.updateCode(record.codeCtg);
       } catch (error) {
         errHandler(error);
+      } finally {
         setLoading(false);
       }
     } catch (error) {

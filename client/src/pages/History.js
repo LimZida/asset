@@ -90,7 +90,6 @@ const History = () => {
         { value: "hwList", label: "하드웨어" },
         { value: "swList", label: "소프트웨어" },
       ];
-      console.log("assetFlag", assetFlag);
       setAssetType(assetFlag);
     } catch (error) {
       errHandler(error);
@@ -107,8 +106,6 @@ const History = () => {
     setLoading(true);
     const startDate = dateSetting[1].subtract(1, "year").format("YYYYMMDD") + "000000";
     const endDate = dateSetting[0].format("YYYYMMDD") + "235959";
-    console.log("startDate", startDate);
-    console.log("endDate", endDate);
 
     try {
       const initialResponse = await request.post(url, {
@@ -138,7 +135,6 @@ const History = () => {
           startIdx: 0,
         },
       });
-      console.log("res", res);
       const searchData = res.data.assetHistoryList.map((item, index) => ({
         key: index,
         ...item,
