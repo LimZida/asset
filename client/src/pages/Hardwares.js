@@ -5,6 +5,7 @@ import { Button, Input, Space, Table, Spin } from "antd";
 import { RedoOutlined, LoadingOutlined } from "@ant-design/icons";
 import request from "../instance";
 import { render } from "@testing-library/react";
+import HardwareModal from '../component/HardwareModal'
 
 const { Search } = Input;
 
@@ -57,6 +58,10 @@ const Hardwares = () => {
   const [data, setData] = useState();
   const [searchList, setSearchList] = useState();
   const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState({});
+  // const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+
   const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
 
   const onSearch = (value) => {
@@ -172,11 +177,13 @@ const Hardwares = () => {
         onRow={(record, rowIndex) => {
           return {
             onClick: (event) => {
-              console.log(record);
+              setSelectedRecord(record);
+               setShowModal(true);
             }, // click row
           };
         }}
       />
+      <HardwareModal showModal={showModal} selected={selectedRecord} closeCodeModal={false} updateCategory={''} updateCode={''} />
     </Space>
   );
 };
